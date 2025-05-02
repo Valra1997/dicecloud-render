@@ -16,7 +16,7 @@ import InputProvider from '/imports/api/engine/action/functions/userInput/InputP
 import getEffectivePropTags from '/imports/api/engine/computation/utility/getEffectivePropTags';
 import Context from '/imports/parser/types/Context';
 import applySavingThrowProperty from '/imports/api/engine/action/applyProperties/applySavingThrowProperty';
-import { assert } from 'chai';
+import assert from 'node:assert';
 
 export default async function applyDamageProperty(
   task: PropTask, action: EngineAction, result: TaskResult, inputProvider: InputProvider
