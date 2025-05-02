@@ -10,6 +10,20 @@ export default async function applyToggle(
 ): Promise<void> {
 
   const prop = task.prop;
+
+  if (prop.type !== 'toggle') {
+    throw new Meteor.Error('wrong-property', `Expected a toggle, got ${prop.type} instead`);
+  }
+
+  if (!prop.condition) {
+    result.appendLog({
+      name: 'Toggle Error',
+      value: 'toggle does not have a condition set',
+      silenced: prop.silent,
+    }, task.targetIds);
+    return applyAfterTasksSkipChildren(action, prop, task.targetIds, inputProvider);
+  }
+
   await recalculateCalculation(prop.condition, action, 'reduce', inputProvider);
   if (prop.condition?.value) {
     return applyDefaultAfterPropTasks(action, prop, task.targetIds, inputProvider);

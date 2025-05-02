@@ -24,6 +24,11 @@ export default async function applyBuffProperty(
   task: PropTask, action: EngineAction, result: TaskResult, userInput: InputProvider
 ) {
   const prop = EJSON.clone(task.prop);
+
+  if (prop.type !== 'buff') {
+    throw new Meteor.Error('wrong-property', `Expected a buff, got ${prop.type} instead`);
+  }
+
   const targetIds = prop.target === 'self' ? [action.creatureId] : task.targetIds;
 
   // Log the buff and return if there are no targets
@@ -55,7 +60,7 @@ export default async function applyBuffProperty(
     renewDocIds({
       docArray: targetPropList,
       idMap: {
-        [prop.parentId]: null,
+        ...prop.parentId && { [prop.parentId]: null },
         [prop.root.id]: target,
       },
       collectionMap: { [prop.root.collection]: 'creatures' }

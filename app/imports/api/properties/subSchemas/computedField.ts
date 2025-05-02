@@ -1,5 +1,5 @@
 import SimpleSchema from 'simpl-schema';
-import ErrorSchema from '/imports/api/properties/subSchemas/ErrorSchema';
+import ErrorSchema, { ErrorSchemaType } from '/imports/api/properties/subSchemas/ErrorSchema';
 import STORAGE_LIMITS from '/imports/constants/STORAGE_LIMITS';
 import ParseNode from '/imports/parser/parseTree/ParseNode';
 import { ConstantValueType } from '/imports/parser/parseTree/constant';
@@ -15,9 +15,13 @@ export type CalculatedOnlyField = {
   proficiencyIds?: string[];
   unaffected?: ConstantValueType;
   parseNode?: ParseNode;
-  parseError?: any;
+  parseError?: ErrorSchemaType;
   hash?: number;
-  errors?: any[];
+  advantage?: number;
+  disadvantage?: number;
+  fail?: number;
+  conditional?: string[];
+  errors?: ErrorSchemaType[];
 }
 
 export type CalculatedField = FieldToCalculate & CalculatedOnlyField;
@@ -41,19 +45,19 @@ function computedOnlyField(field) {
   const schemaObj = {
     // The value (or calculation string) before any effects/proficiencies are applied or rolls made
     [`${field}.unaffected`]: {
-      type: SimpleSchema.oneOf(String, Number),
+      type: SimpleSchema.oneOf(String, Number, Boolean),
       optional: true,
       blackbox: true,
     },
     // The value (or calculation string) after applying all effects
     [`${field}.value`]: {
-      type: SimpleSchema.oneOf(String, Number),
+      type: SimpleSchema.oneOf(String, Number, Boolean),
       optional: true,
       blackbox: true,
     },
     // The value as a parse node, after applying all effects
     [`${field}.valueNode`]: {
-      type: SimpleSchema.oneOf(String, Number),
+      type: Object,
       optional: true,
       blackbox: true,
     },
@@ -167,7 +171,7 @@ function includeParentFields(field, schemaObj) {
 // This should rarely be used, since the other two will merge correctly when
 // uncomputed and computedOnly schemas are merged
 function computedField(field) {
-  return computedField(field).extend(computedOnlyField(field));
+  return fieldToCompute(field).extend(computedOnlyField(field));
 }
 
 export {

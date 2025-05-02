@@ -4,14 +4,15 @@ import {
   createTestCreature,
   getRandomIds,
   removeAllCreaturesAndProps,
-  runActionById
+  runActionById,
+  TestCreature
 } from '/imports/api/engine/action/functions/actionEngineTest.testFn';
 
 const [
   creatureId, targetCreatureId, buffId
 ] = getRandomIds(100);
 
-const actionTestCreature = {
+const actionTestCreature: TestCreature = {
   _id: creatureId,
   props: [
     {
@@ -36,7 +37,7 @@ const actionTestCreature = {
   ],
 };
 
-const actionTargetCreature = {
+const actionTargetCreature: TestCreature = {
   _id: targetCreatureId,
   props: [
     {
@@ -87,7 +88,6 @@ describe('Apply Buff Properties', function () {
         },
         left: 1,
         right: 4,
-        parentId: null,
         root: {
           collection: 'creatures',
           id: targetCreatureId,

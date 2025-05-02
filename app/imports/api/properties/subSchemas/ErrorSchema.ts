@@ -1,5 +1,6 @@
 import STORAGE_LIMITS from '/imports/constants/STORAGE_LIMITS';
-import { TypedSimpleSchema } from '/imports/api/utility/TypedSimpleSchema';
+import { InferType, TypedSimpleSchema } from '/imports/api/utility/TypedSimpleSchema';
+import { Simplify } from 'type-fest';
 
 const ErrorSchema = TypedSimpleSchema.from({
   message: {
@@ -11,5 +12,7 @@ const ErrorSchema = TypedSimpleSchema.from({
     max: STORAGE_LIMITS.name,
   },
 });
+
+export type ErrorSchemaType = Simplify<InferType<typeof ErrorSchema>>;
 
 export default ErrorSchema;

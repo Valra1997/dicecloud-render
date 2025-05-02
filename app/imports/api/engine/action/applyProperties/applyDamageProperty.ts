@@ -16,11 +16,17 @@ import InputProvider from '/imports/api/engine/action/functions/userInput/InputP
 import getEffectivePropTags from '/imports/api/engine/computation/utility/getEffectivePropTags';
 import Context from '/imports/parser/types/Context';
 import applySavingThrowProperty from '/imports/api/engine/action/applyProperties/applySavingThrowProperty';
+import { assert } from 'chai';
 
 export default async function applyDamageProperty(
   task: PropTask, action: EngineAction, result: TaskResult, inputProvider: InputProvider
 ) {
   const prop = task.prop;
+
+  if (prop.type !== 'damage') {
+    throw new Meteor.Error('wrong-property', `Expected damage, got ${prop.type} instead`);
+  }
+
   const scope = await getEffectiveActionScope(action);
 
   // Choose target
@@ -66,7 +72,7 @@ export default async function applyDamageProperty(
       damage = reduced.value;
     }
   } else if (reduced.parseType === 'error') {
-    prop.amount.value = null;
+    prop.amount.value = undefined;
   } else {
     prop.amount.value = toString(reduced);
   }
@@ -104,6 +110,7 @@ export default async function applyDamageProperty(
     if (prop.save.damageFunction?.calculation) {
       await recalculateCalculation(prop.save.damageFunction, action, 'compile', inputProvider);
       context.errors = [];
+      assert(prop.save.damageFunction.valueNode, 'Expected value to be defined after recalculateCalculation');
       const { result: saveDamageRolled } = await resolve(
         'roll', prop.save.damageFunction.valueNode, scope, context, inputProvider
       );
@@ -154,7 +161,7 @@ export default async function applyDamageProperty(
           } else {
             logValue.push(
               '**Damage on successful save**',
-              prop.save.damageFunction.calculation,
+              prop.save.damageFunction?.calculation ?? '',
               saveRoll
             );
           }
@@ -283,14 +290,14 @@ async function dealDamage(
   healthBars.sort((a, b) => {
     let diff;
     if (amount >= 0) {
-      diff = a.healthBarDamageOrder - b.healthBarDamageOrder;
+      diff = (a.healthBarDamageOrder ?? 0) - (b.healthBarDamageOrder ?? 0);
     } else {
-      diff = a.healthBarHealingOrder - b.healthBarHealingOrder;
+      diff = (a.healthBarHealingOrder ?? 0) - (b.healthBarHealingOrder ?? 0);
     }
     if (Number.isFinite(diff)) {
       return diff;
     } else {
-      return a.order - b.order;
+      return a.left - b.left;
     }
   });
 

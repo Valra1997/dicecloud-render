@@ -1,14 +1,6 @@
 import SimpleSchema from 'simpl-schema';
 import STORAGE_LIMITS from '/imports/constants/STORAGE_LIMITS';
-import { TypedSimpleSchema } from '/imports/api/utility/TypedSimpleSchema';
-
-export interface Shared {
-  owner: string,
-  readers: string[],
-  writers: string[],
-  public: boolean,
-  readersCanCopy?: true,
-}
+import { InferType, TypedSimpleSchema } from '/imports/api/utility/TypedSimpleSchema';
 
 const SharingSchema = TypedSimpleSchema.from({
   owner: {
@@ -46,5 +38,7 @@ const SharingSchema = TypedSimpleSchema.from({
     optional: true,
   },
 });
+
+export type Shared = InferType<typeof SharingSchema>;
 
 export default SharingSchema;

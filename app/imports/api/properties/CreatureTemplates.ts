@@ -24,6 +24,11 @@ const CreatureTemplateSchema = createPropertySchema({
     optional: true,
     max: STORAGE_LIMITS.url,
   },
+  // Prevent the property from showing up in the log
+  silent: {
+    type: Boolean,
+    optional: true,
+  },
 });
 
 const ComputedOnlyCreatureTemplateSchema = createPropertySchema({

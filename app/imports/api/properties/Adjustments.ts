@@ -18,7 +18,7 @@ const AdjustmentSchema = createPropertySchema({
     allowedValues: [
       'self',
       'target',
-    ],
+    ] as const,
   },
   // The stat this rolls applies to
   stat: {
@@ -28,7 +28,7 @@ const AdjustmentSchema = createPropertySchema({
   },
   operation: {
     type: String,
-    allowedValues: ['set', 'increment'],
+    allowedValues: ['set', 'increment'] as const,
     defaultValue: 'increment',
   },
   // Prevent the property from showing up in the log

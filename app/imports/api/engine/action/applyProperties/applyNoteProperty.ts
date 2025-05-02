@@ -9,7 +9,12 @@ export default async function applyNoteProperty(
   task: PropTask, action: EngineAction, result: TaskResult, inputProvider: InputProvider
 ): Promise<void> {
   const prop = task.prop;
-  const logContent: LogContent & { silenced: boolean } = {
+
+  if (prop.type !== 'note') {
+    throw new Meteor.Error('wrong-property', `Expected a note, got ${prop.type} instead`);
+  }
+
+  const logContent: LogContent & { silenced: boolean | undefined; } = {
     silenced: prop.silent,
   };
   if (prop.name) logContent.name = prop.name;

@@ -4,14 +4,15 @@ import {
   createTestCreature,
   getRandomIds,
   removeAllCreaturesAndProps,
-  runActionById
+  runActionById,
+  TestCreature
 } from '/imports/api/engine/action/functions/actionEngineTest.testFn';
 
 const [
   creatureId, savingThrowId, targetCreatureId, targetCreature2Id
 ] = getRandomIds(4);
 
-const actionTestCreature = {
+const actionTestCreature: TestCreature = {
   _id: creatureId,
   props: [
     {
@@ -39,7 +40,7 @@ const actionTestCreature = {
   ],
 }
 
-const actionTargetCreature = {
+const actionTargetCreature: TestCreature = {
   _id: targetCreatureId,
   props: [
     {
@@ -49,7 +50,7 @@ const actionTargetCreature = {
     },
   ],
 }
-const actionTargetCreature2 = {
+const actionTargetCreature2: TestCreature = {
   _id: targetCreature2Id,
   props: [
     {

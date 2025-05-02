@@ -9,7 +9,12 @@ export default async function applyTriggerProperty(
   task: PropTask, action: EngineAction, result: TaskResult, userInput
 ): Promise<void> {
   const prop = task.prop;
-  const logContent: LogContent & { silenced: boolean } = {
+
+  if (prop.type !== 'trigger') {
+    throw new Meteor.Error('wrong-property', `Expected a trigger, got ${prop.type} instead`);
+  }
+
+  const logContent: LogContent & { silenced: boolean | undefined } = {
     name: getPropertyTitle(prop),
     silenced: prop.silent,
   }

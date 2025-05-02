@@ -203,11 +203,10 @@ const updateLibraryNode = new ValidatedMethod({
     // We cannot change these fields with a simple update
     switch (path[0]) {
       case 'type':
-      case 'order':
-      case 'parent':
-      case 'ancestors':
-      case 'parentId':
       case 'root':
+      case 'left':
+      case 'right':
+      case 'parentId':
         return false;
     }
   },

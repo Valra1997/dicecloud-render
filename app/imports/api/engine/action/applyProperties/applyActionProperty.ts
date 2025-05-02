@@ -13,6 +13,7 @@ import { getNumberFromScope } from '/imports/api/creature/creatures/CreatureVari
 import InputProvider from '/imports/api/engine/action/functions/userInput/InputProvider';
 import { CalculatedField } from '/imports/api/properties/subSchemas/computedField';
 import applyResetTask from '/imports/api/engine/action/tasks/applyResetTask';
+import { CreaturePropertyTypes } from '/imports/api/creature/creatureProperties/CreatureProperties';
 
 export default async function applyActionProperty(
   task: PropTask, action: EngineAction, result: TaskResult, userInput: InputProvider
@@ -101,6 +102,8 @@ async function applyAttackToTarget(
   task: PropTask, action: EngineAction, attack: CalculatedField, targetId: string,
   taskResult: TaskResult, userInput: InputProvider
 ) {
+  const prop = task.prop as CreaturePropertyTypes['action'] | CreaturePropertyTypes['spell'];
+
   taskResult.pushScope = {
     '~attackHit': {},
     '~attackMiss': {},
@@ -138,7 +141,7 @@ async function applyAttackToTarget(
       name,
       value: `${resultPrefix}\n**${result}**`,
       inline: true,
-      ...task.prop.silent && { silenced: true },
+      ...prop.silent && { silenced: true },
     });
 
     if (criticalMiss || result < targetArmor) {
@@ -151,12 +154,12 @@ async function applyAttackToTarget(
       name: 'Error',
       value: 'Target has no `armor`',
       inline: true,
-      ...task.prop.silent && { silenced: true },
+      ...prop.silent && { silenced: true },
     }, {
       name: criticalHit ? 'Critical Hit!' : criticalMiss ? 'Critical Miss!' : 'To Hit',
       value: `${resultPrefix}\n**${result}**`,
       inline: true,
-      ...task.prop.silent && { silenced: true },
+      ...prop.silent && { silenced: true },
     });
   }
   if (contents.length) {

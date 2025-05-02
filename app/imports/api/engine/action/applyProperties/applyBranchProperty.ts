@@ -12,10 +12,23 @@ export default async function applyBranchProperty(
   task: PropTask, action: EngineAction, result: TaskResult, userInput: InputProvider
 ): Promise<void> {
   const prop = task.prop;
+
+  if (prop.type !== 'branch') {
+    throw new Meteor.Error('wrong-property', `Expected a branch, got ${prop.type} instead`);
+  }
+
   const targets = task.targetIds;
 
   switch (prop.branchType) {
     case 'if': {
+      if (!prop.condition) {
+        result.appendLog({
+          name: 'Branch Error',
+          value: 'If branch does not have a condition set',
+          silenced: prop.silent,
+        }, targets);
+        return applyAfterTasksSkipChildren(action, prop, targets, userInput);
+      }
       await recalculateCalculation(prop.condition, action, 'reduce', userInput);
       if (prop.condition?.value) {
         return applyDefaultAfterPropTasks(action, prop, targets, userInput);
@@ -28,8 +41,17 @@ export default async function applyBranchProperty(
       if (!children.length) {
         return applyAfterTasksSkipChildren(action, prop, targets, userInput);
       }
+      if (!prop.condition) {
+        result.appendLog({
+          name: 'Branch Error',
+          value: 'Index branch does not have a condition set',
+          silenced: prop.silent,
+        }, targets);
+        return applyAfterTasksSkipChildren(action, prop, targets, userInput);
+      }
       await recalculateCalculation(prop.condition, action, 'reduce', userInput);
-      if (!isFinite(prop.condition?.value)) {
+      let index = Number(prop.condition.value);
+      if (!isFinite(index)) {
         result.appendLog({
           name: 'Branch Error',
           value: `Index did not resolve into a valid number, got \`${prop.condition?.value}\` instead`,
@@ -37,7 +59,7 @@ export default async function applyBranchProperty(
         }, targets);
         return applyAfterTasksSkipChildren(action, prop, targets, userInput);
       }
-      let index = Math.floor(prop.condition?.value);
+      index = Math.floor(index);
       if (index < 1) index = 1;
       if (index > children.length) index = children.length;
       const child = children[index - 1];

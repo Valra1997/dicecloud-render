@@ -7,11 +7,17 @@ import TaskResult from '/imports/api/engine/action/tasks/TaskResult';
 import applyTask from '/imports/api/engine/action/tasks/applyTask';
 import { getSingleProperty, getVariables } from '/imports/api/engine/loadCreatures';
 import getPropertyTitle from '/imports/api/utility/getPropertyTitle';
+import { CreatureProperty } from '/imports/api/creature/creatureProperties/CreatureProperties';
 
 export default async function applyAdjustmentProperty(
   task: PropTask, action: EngineAction, result: TaskResult, userInput: InputProvider
 ): Promise<void> {
   const prop = task.prop;
+
+  if (prop.type !== 'adjustment') {
+    throw new Meteor.Error('wrong-property', `Expected an adjustment, got ${prop.type} instead`);
+  }
+
   const damageTargetIds = prop.target === 'self' ? [action.creatureId] : task.targetIds;
 
   if (damageTargetIds.length > 1) {
@@ -30,7 +36,7 @@ export default async function applyAdjustmentProperty(
 
   // Evaluate the amount
   await recalculateCalculation(prop.amount, action, 'reduce', userInput);
-  const value = +prop.amount.value;
+  const value = Number(prop.amount.value ?? 0);
   if (!isFinite(value)) {
     result.appendLog({
       name: 'Error',
@@ -44,8 +50,8 @@ export default async function applyAdjustmentProperty(
     throw new Meteor.Error('1 target Expected', 'At this step, only a single target is supported');
   }
   const targetId = damageTargetIds[0];
-  let stat;
-  if (targetId) {
+  let stat: CreatureProperty | undefined;
+  if (targetId && prop.stat) {
     const statId = getVariables(targetId)?.[prop.stat]?._propId;
     stat = statId && getSingleProperty(targetId, statId);
     if (!stat?.type) {
@@ -64,7 +70,7 @@ export default async function applyAdjustmentProperty(
       title: getPropertyTitle(prop),
       operation: prop.operation,
       value,
-      targetProp: stat ?? { _id: 'dummyStat', name: prop.stat, type: 'attribute' },
+      targetProp: stat ?? { name: prop.stat ?? '' },
     },
   }, userInput);
   return applyDefaultAfterPropTasks(action, prop, damageTargetIds, userInput);

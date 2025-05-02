@@ -11,6 +11,11 @@ export default async function applyRollProperty(
   task: PropTask, action: EngineAction, result: TaskResult, inputProvider: InputProvider
 ): Promise<void> {
   const prop = task.prop;
+
+  if (prop.type !== 'roll') {
+    throw new Meteor.Error('wrong-property', `Expected a roll, got ${prop.type} instead`);
+  }
+
   // If there isn't a calculation, just apply the children instead
   if (!prop.roll?.calculation) {
     return applyDefaultAfterPropTasks(action, prop, task.targetIds, inputProvider);
@@ -38,7 +43,7 @@ export default async function applyRollProperty(
   if (reduced.parseType === 'constant') {
     prop.roll.value = reduced.value;
   } else if (reduced.parseType === 'error') {
-    prop.roll.value = null;
+    prop.roll.value = undefined;
   } else {
     prop.roll.value = toString(reduced);
   }

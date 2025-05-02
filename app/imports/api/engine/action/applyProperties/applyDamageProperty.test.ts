@@ -4,7 +4,8 @@ import {
   createTestCreature,
   getRandomIds,
   removeAllCreaturesAndProps,
-  runActionById
+  runActionById,
+  TestCreature
 } from '/imports/api/engine/action/functions/actionEngineTest.testFn';
 import { critInputProvider } from '../functions/userInput/inputProviderForTests.testFn';
 
@@ -12,7 +13,7 @@ const [
   creatureId, targetCreatureId, targetCreature2Id, damageTargetId, damageSelfId, targetCreatureHitPointsId, targetCreature2HitPointsId, selfHitPointsId, damageWithEffectsId, effectId, effect2Id,
 ] = getRandomIds(20);
 
-const actionTestCreature = {
+const actionTestCreature: TestCreature = {
   _id: creatureId,
   props: [
     {
@@ -61,7 +62,7 @@ const actionTestCreature = {
   ],
 }
 
-const actionTargetCreature = {
+const actionTargetCreature: TestCreature = {
   _id: targetCreatureId,
   props: [
     {
@@ -75,7 +76,7 @@ const actionTargetCreature = {
   ]
 }
 
-const actionTargetCreature2 = {
+const actionTargetCreature2: TestCreature = {
   _id: targetCreature2Id,
   props: [
     {
@@ -247,7 +248,7 @@ describe('Apply Damage Properties', function () {
     const [
       creatureId, damageId, actionId
     ] = getRandomIds(3);
-    const testCreature = {
+    const testCreature: TestCreature = {
       _id: creatureId,
       props: [
         {

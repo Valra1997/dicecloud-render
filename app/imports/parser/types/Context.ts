@@ -1,6 +1,6 @@
 
 export default class Context {
-  errors: (Error | { type: string; message: string; })[];
+  errors: { type: string; message: string }[];
   rolls: { number: number; diceSize: number; values: number[]; }[];
   options: { [key: string]: any; };
 
@@ -18,7 +18,10 @@ export default class Context {
         message: e,
       });
     } else {
-      this.errors.push(e);
+      this.errors.push({
+        type: 'error',
+        message: e.message,
+      });
     }
   }
 

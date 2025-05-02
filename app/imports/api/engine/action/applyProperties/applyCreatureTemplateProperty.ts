@@ -7,7 +7,12 @@ export default async function applyCreatureTemplateProperty(
   task: PropTask, action: EngineAction, result, userInput
 ): Promise<void> {
   const prop = task.prop;
-  //Log the Creature that is about to be summoned
+
+  if (prop.type !== 'creature') {
+    throw new Meteor.Error('wrong-property', `Expected a creature, got ${prop.type} instead`);
+  }
+
+  // Log the Creature that is about to be summoned
   let logValue = prop.description?.value
   if (prop.description?.text) {
     await recalculateInlineCalculations(prop.description, action, 'reduce', userInput);

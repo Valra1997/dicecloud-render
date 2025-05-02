@@ -7,11 +7,12 @@ import getEffectivePropTags from '/imports/api/engine/computation/utility/getEff
 import { applyDefaultAfterPropTasks, applyTaskToEachTarget } from '/imports/api/engine/action/functions/applyTaskGroups';
 import { EngineAction } from '/imports/api/engine/action/EngineActions';
 import InputProvider from '/imports/api/engine/action/functions/userInput/InputProvider';
+import { CreaturePropertyTypes } from '/imports/api/creature/creatureProperties/CreatureProperties';
 
 export default async function applyBuffRemoverProperty(
   task: PropTask, action: EngineAction, result: TaskResult, userInput: InputProvider
 ) {
-  const prop = task.prop;
+  const prop = task.prop as CreaturePropertyTypes['buffRemover'];
 
   const targetIds = prop.target === 'self' ? [action.creatureId] : task.targetIds;
 

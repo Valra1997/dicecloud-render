@@ -16,13 +16,19 @@ export default async function applySavingThrowProperty(
 
   const prop = task.prop;
 
+  if (prop.type !== 'savingThrow') {
+    throw new Meteor.Error('wrong-property', `Expected a savingThrow, got ${prop.type} instead`);
+  }
+
   const saveTargetIds = prop.target === 'self' ? [action.creatureId] : task.targetIds;
 
   if (saveTargetIds.length > 1) {
     return applyTaskToEachTarget(action, task, saveTargetIds, inputProvider);
   }
 
-  recalculateCalculation(prop.dc, action, 'reduce', inputProvider);
+  if (prop.dc) {
+    recalculateCalculation(prop.dc, action, 'reduce', inputProvider);
+  }
 
   if (!isFiniteNode(prop.dc?.valueNode)) {
     result.appendLog({
@@ -33,7 +39,7 @@ export default async function applySavingThrowProperty(
     return applyDefaultAfterPropTasks(action, prop, saveTargetIds, inputProvider);
   }
 
-  const dc = (prop.dc?.value);
+  const dc = Number(prop.dc?.value ?? 0);
   result.appendLog({
     name: getPropertyTitle(prop),
     value: `DC **${dc}**`,
@@ -54,7 +60,7 @@ export default async function applySavingThrowProperty(
   }
 
   // Each target makes the saving throw
-  const save = getFromScope(prop.stat, getVariables(targetId));
+  const save = prop.stat ? getFromScope(prop.stat, getVariables(targetId)) : undefined;
 
   if (!save) {
     result.appendLog({

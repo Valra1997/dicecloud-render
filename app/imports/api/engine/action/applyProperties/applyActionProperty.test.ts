@@ -6,7 +6,8 @@ import {
   createTestCreature,
   getRandomIds,
   removeAllCreaturesAndProps,
-  runActionById
+  runActionById,
+  TestCreature
 } from '/imports/api/engine/action/functions/actionEngineTest.testFn';
 import { LogContent, Mutation, Update } from '/imports/api/engine/action/tasks/TaskResult';
 import Alea from 'alea';
@@ -19,7 +20,7 @@ const [
   attributeResetByEventId, eventActionId, advantageAttackId, advantageEffectId, disadvantageAttackId, disadvantageEffectId,
 ] = getRandomIds(100);
 
-const actionTestCreature = {
+const actionTestCreature: TestCreature = {
   _id: creatureId,
   props: [
     // Empty
@@ -138,7 +139,8 @@ const actionTestCreature = {
           _id: consumeResourceId,
           variableName: 'resourceVar',
           quantity: { calculation: '2' },
-        }]
+        }],
+        conditions: [],
       }
     },
     {
@@ -149,7 +151,9 @@ const actionTestCreature = {
           _id: consumeResourceId,
           variableName: 'resourceVar',
           quantity: { calculation: '9001' },
-        }]
+        }],
+        itemsConsumed: [],
+        conditions: [],
       }
     },
     // Events and resetting attributes
@@ -172,7 +176,7 @@ const actionTestCreature = {
   ],
 }
 
-const actionTargetCreature = {
+const actionTargetCreature: TestCreature = {
   _id: targetCreatureId,
   props: [
     {
@@ -184,7 +188,7 @@ const actionTargetCreature = {
   ]
 }
 
-const actionTargetCreature2 = {
+const actionTargetCreature2: TestCreature = {
   _id: targetCreature2Id,
   props: [
     {
@@ -329,7 +333,9 @@ describe('Apply Action Properties', function () {
 
   it('should make attack rolls that roll with advantage', async function () {
     const prop = await CreatureProperties.findOneAsync(advantageAttackId);
-    assert.equal(prop.attackRoll.advantage, 1, 'The attack roll should have advantage');
+    assert(prop);
+    assert(prop.type === 'action')
+    assert.equal(prop.attackRoll?.advantage, 1, 'The attack roll should have advantage');
     const action = await runActionById(advantageAttackId, [targetCreatureId]);
     const expectedMutations: Mutation[] = [
       {
@@ -349,7 +355,9 @@ describe('Apply Action Properties', function () {
 
   it('should make attack rolls that roll with disadvantage', async function () {
     const prop = await CreatureProperties.findOneAsync(disadvantageAttackId);
-    assert.equal(prop.attackRoll.disadvantage, 1, 'The attack roll should have disadvantage');
+    assert(prop);
+    assert(prop.type === 'action');
+    assert.equal(prop.attackRoll?.disadvantage, 1, 'The attack roll should have disadvantage');
     const action = await runActionById(disadvantageAttackId, [targetCreatureId]);
     const expectedMutations: Mutation[] = [
       {

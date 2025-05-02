@@ -25,7 +25,7 @@ export type DamagePropTask = BaseTask & {
     title?: string;
     operation: 'increment' | 'set';
     value: number;
-    targetProp: CreatureProperty;
+    targetProp: CreatureProperty | { name: string, };
   };
 }
 
