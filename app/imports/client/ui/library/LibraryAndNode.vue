@@ -28,8 +28,8 @@
           ref="searchBox"
           v-model="filter"
           class="mx-4"
-          @extra-fields-changed="val => extraFields = val"
           :is-library="true"
+          @extra-fields-changed="val => extraFields = val"
         />
         <v-spacer />
         <v-fade-transition>

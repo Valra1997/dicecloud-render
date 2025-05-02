@@ -143,7 +143,7 @@ export type CreaturePropertyTypes = {
   >
 }
 
-export type CreatureProperty = ConvertToUnion<CreaturePropertyTypes>;
+export type CreatureProperty = Simplify<ConvertToUnion<CreaturePropertyTypes>>;
 
 const CreatureProperties = new Mongo.Collection<CreatureProperty>('creatureProperties');
 

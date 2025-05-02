@@ -14,3 +14,4 @@ private/oldClient
 nohup.out
 node_modules
 dump
+*.crt

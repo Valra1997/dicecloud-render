@@ -13,11 +13,11 @@ Migrations.add({
   name: 'Changes parenting from array of ancestors to nested sets',
   up: Meteor.wrapAsync(async (_, next) => {
     console.log('migrating up library nodes 2 -> 3');
-    migrateCollection('libraryNodes');
+    await migrateCollection('libraryNodes');
     console.log('migrating up creature props 2 -> 3');
-    migrateCollection('creatureProperties');
+    await migrateCollection('creatureProperties');
     console.log('migrating up docs 2 -> 3');
-    migrateCollection('docs');
+    await migrateCollection('docs');
     console.log('New parenting schema fields added, if it was done correctly remove the old fields manually');
 
     console.log('removing all CreatureVariables, creatures will add them back the next time they recalculate');
@@ -52,7 +52,9 @@ export function migrateCollection(collectionName: string) {
   // Copy the parent id field and the root ancestor to the new structure
   // Using the mongo aggregation API
   // Waring: This will destroy parenting data if the old parenting fields are deleted
-  return collection.rawCollection().updateMany({}, [
+  return collection.rawCollection().updateMany({
+    'root.id': undefined,
+  }, [
     {
       $addFields: {
         'root': { $arrayElemAt: ['$ancestors', 0] },

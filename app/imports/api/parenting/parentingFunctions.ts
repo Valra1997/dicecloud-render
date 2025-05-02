@@ -3,8 +3,8 @@ import { TreeDoc, treeDocFields, Reference } from '/imports/api/parenting/ChildS
 import { getProperties } from '/imports/api/engine/loadCreatures';
 import CreatureProperties from '/imports/api/creature/creatureProperties/CreatureProperties';
 
-export function getCollectionByName(name: string): Mongo.Collection<TreeDoc> {
-  const collection = Mongo.Collection.get<TreeDoc>(name)
+export function getCollectionByName<T = TreeDoc>(name: string): Mongo.Collection<T> {
+  const collection = Mongo.Collection.get<T>(name)
   if (!collection) {
     throw new Meteor.Error('bad-collection-reference',
       `Parent references collection ${name}, which does not exist`
@@ -27,8 +27,8 @@ export function fetchDocByRefAsync(ref: Reference, options?: Mongo.Options<objec
   return doc;
 }
 
-export function fetchDocByRef(ref: Reference, options?: Mongo.Options<object>): TreeDoc {
-  const doc: TreeDoc = getCollectionByName(ref.collection).findOne(ref.id, options);
+export function fetchDocByRef<T extends object = TreeDoc>(ref: Reference, options?: Mongo.Options<object>): T {
+  const doc: T = getCollectionByName<T>(ref.collection).findOne(ref.id, options);
   assertDocFound(doc, ref);
   return doc;
 }

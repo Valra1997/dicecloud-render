@@ -1,5 +1,4 @@
 import { Meteor } from 'meteor/meteor';
-import { Mongo } from 'meteor/mongo';
 import { ValidatedMethod } from 'meteor/mdg:validated-method';
 import { RateLimiterMixin } from 'ddp-rate-limiter-mixin';
 import SimpleSchema from 'simpl-schema';
@@ -7,7 +6,7 @@ import ColorSchema from '/imports/api/properties/subSchemas/ColorSchema';
 import ChildSchema, { RefSchema } from '/imports/api/parenting/ChildSchema';
 import propertySchemasIndex from '/imports/api/properties/propertySchemasIndex';
 import Libraries from '/imports/api/library/Libraries';
-import { assertEditPermission } from '/imports/api/sharing/sharingPermissions';
+import { assertDocEditPermission, assertEditPermission } from '/imports/api/sharing/sharingPermissions';
 import { softRemove } from '/imports/api/parenting/softRemove';
 import SoftRemovableSchema from '/imports/api/parenting/SoftRemovableSchema';
 import { storedIconsSchema } from '/imports/api/icons/Icons';
@@ -15,12 +14,13 @@ import '/imports/api/library/methods/index';
 import { updateReferenceNodeWork } from '/imports/api/library/methods/updateReferenceNode';
 import STORAGE_LIMITS from '/imports/constants/STORAGE_LIMITS';
 import { restore } from '/imports/api/parenting/softRemove';
-import { fetchDocByRef, getAncestry } from '/imports/api/parenting/parentingFunctions';
+import { fetchDocByRef } from '/imports/api/parenting/parentingFunctions';
 import { rebuildNestedSets } from '/imports/api/parenting/parentingFunctions';
+import { ConvertToUnion, InferType, TypedSimpleSchema } from '/imports/api/utility/TypedSimpleSchema';
+import type { PropertyType } from '/imports/api/properties/PropertyType.type';
+import { Simplify } from 'type-fest';
 
-let LibraryNodes = new Mongo.Collection('libraryNodes');
-
-let LibraryNodeSchema = new SimpleSchema({
+const LibraryNodeSchema = TypedSimpleSchema.from({
   _id: {
     type: String,
     max: 32,
@@ -51,13 +51,11 @@ let LibraryNodeSchema = new SimpleSchema({
   fillSlots: {
     type: Boolean,
     optional: true,
-    index: 1,
   },
   // Will this property show up in the insert-from-library dialog
   searchable: {
     type: Boolean,
     optional: true,
-    index: 1,
   },
   libraryTags: {
     type: Array,
@@ -100,37 +98,48 @@ let LibraryNodeSchema = new SimpleSchema({
   },
 });
 
+export type LibraryNodeTypes = {
+  [T in PropertyType]: Simplify<
+    { type: T }
+    & InferType<typeof propertySchemasIndex[T]>
+  > & Simplify<
+    Exclude<InferType<typeof LibraryNodeSchema>, 'type'>
+    & InferType<typeof ColorSchema>
+    & InferType<typeof ChildSchema>
+    & InferType<typeof SoftRemovableSchema>
+  >
+}
+
+export type LibraryNode = ConvertToUnion<LibraryNodeTypes>;
+
+const LibraryNodes = new Mongo.Collection<LibraryNode>('libraryNodes');
+
 // Set up server side search index
 if (Meteor.isServer) {
-  LibraryNodes._ensureIndex({
+  LibraryNodes.createIndexAsync({
     'name': 'text',
     'tags': 'text',
   });
 }
 
-for (let key in propertySchemasIndex) {
-  let schema = new SimpleSchema({});
-  schema.extend(LibraryNodeSchema);
-  schema.extend(ColorSchema);
-  schema.extend(propertySchemasIndex[key]);
-  schema.extend(ChildSchema);
-  schema.extend(SoftRemovableSchema);
-  // @ts-expect-error don't have types for .attachSchema
+const genericLibraryNodeSchema = TypedSimpleSchema.from({})
+  .extend(LibraryNodeSchema)
+  .extend(ColorSchema)
+  .extend(ChildSchema)
+  .extend(SoftRemovableSchema);
+
+// Attach the default schema
+LibraryNodes.attachSchema(genericLibraryNodeSchema);
+
+// Attach the schemas for each type
+let key: keyof typeof propertySchemasIndex;
+for (key in propertySchemasIndex) {
+  const schema = TypedSimpleSchema.from({})
+    .extend(propertySchemasIndex[key])
+    .extend(genericLibraryNodeSchema);
   LibraryNodes.attachSchema(schema, {
     selector: { type: key }
   });
-}
-
-function getLibrary(node) {
-  if (!node) throw new Meteor.Error('No node provided');
-  let library = Libraries.findOne(node.root.id);
-  if (!library) throw new Meteor.Error('Library does not exist');
-  return library;
-}
-
-function assertNodeEditPermission(node, userId) {
-  let lib = getLibrary(node);
-  return assertEditPermission(lib, userId);
 }
 
 const insertNode = new ValidatedMethod({
@@ -209,8 +218,8 @@ const updateLibraryNode = new ValidatedMethod({
   },
   run({ _id, path, value }) {
     let node = LibraryNodes.findOne(_id);
-    assertNodeEditPermission(node, this.userId);
-    let pathString = path.join('.');
+    assertDocEditPermission(node, this.userId);
+    const pathString = path.join('.');
     let modifier;
     // unset empty values
     if (value === null || value === undefined) {
@@ -218,7 +227,7 @@ const updateLibraryNode = new ValidatedMethod({
     } else {
       modifier = { $set: { [pathString]: value } };
     }
-    let numUpdated = LibraryNodes.update(_id, modifier, {
+    const numUpdated = LibraryNodes.update(_id, modifier, {
       selector: { type: node.type },
     });
     if (node.type == 'reference') {
@@ -238,8 +247,8 @@ const pushToLibraryNode = new ValidatedMethod({
     timeInterval: 5000,
   },
   run({ _id, path, value }) {
-    let node = LibraryNodes.findOne(_id);
-    assertNodeEditPermission(node, this.userId);
+    const node = LibraryNodes.findOne(_id);
+    assertDocEditPermission(node, this.userId);
     return LibraryNodes.update(_id, {
       $push: { [path.join('.')]: value },
     }, {
@@ -257,8 +266,8 @@ const pullFromLibraryNode = new ValidatedMethod({
     timeInterval: 5000,
   },
   run({ _id, path, itemId }) {
-    let node = LibraryNodes.findOne(_id);
-    assertNodeEditPermission(node, this.userId);
+    const node = LibraryNodes.findOne(_id);
+    assertDocEditPermission(node, this.userId);
     return LibraryNodes.update(_id, {
       $pull: { [path.join('.')]: { _id: itemId } },
     }, {
@@ -279,8 +288,8 @@ const softRemoveLibraryNode = new ValidatedMethod({
     timeInterval: 5000,
   },
   run({ _id }) {
-    let node = LibraryNodes.findOne(_id);
-    assertNodeEditPermission(node, this.userId);
+    const node = LibraryNodes.findOne(_id);
+    assertDocEditPermission(node, this.userId);
     softRemove(LibraryNodes, node);
   }
 });
@@ -297,8 +306,9 @@ const restoreLibraryNode = new ValidatedMethod({
   },
   run({ _id }) {
     // Permissions
-    let node = LibraryNodes.findOne(_id);
-    assertNodeEditPermission(node, this.userId);
+    const node = LibraryNodes.findOne(_id);
+    if (!node) return;
+    assertDocEditPermission(node, this.userId);
     // Do work
     restore(LibraryNodes, node);
   }

@@ -32,5 +32,18 @@ declare namespace Mongo {
      *
      */
     attachSchema(ss: SimpleSchema | TypedSimpleSchema<T>, options?: SchemaOptions): void;
+    update(
+      selector: Selector<T> | ObjectID | string,
+      modifier: Modifier<T>,
+      options?: {
+        multi?: boolean | undefined;
+        upsert?: boolean | undefined;
+        arrayFilters?: Array<{ [identifier: string]: any }> | undefined;
+        // Add Collection2 options
+        selector?: Record<string, any>;
+        getAutoValues?: boolean;
+      },
+      callback?: FunctionConstructor,
+    ): number;
   }
 }
