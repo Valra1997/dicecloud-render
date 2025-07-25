@@ -4,7 +4,6 @@ import { RateLimiterMixin } from 'ddp-rate-limiter-mixin';
 import LibraryNodes from '/imports/api/library/LibraryNodes';
 import { assertDocEditPermission } from '/imports/api/sharing/sharingPermissions';
 import {
-  setLineageOfDocs,
   renewDocIds,
   getFilter
 } from '/imports/api/parenting/parentingFunctions';
@@ -38,10 +37,6 @@ const duplicateLibraryNode = new ValidatedMethod({
 
     assertDocEditPermission(libraryNode, this.userId);
 
-    let randomSrc = DDP.randomStream('duplicateLibraryNode');
-    let libraryNodeId = randomSrc.id();
-    libraryNode._id = libraryNodeId;
-
     let nodes = LibraryNodes.find({
       ...getFilter.descendants(libraryNode),
       removed: { $ne: true },
@@ -64,14 +59,14 @@ const duplicateLibraryNode = new ValidatedMethod({
     renewDocIds({ docArray: allNodes });
 
     // Order the root node
-    libraryNode.order += 0.5;
+    libraryNode.left += 0.5;
 
     LibraryNodes.batchInsert(allNodes);
 
     // Tree structure changed by inserts, reorder the tree
     rebuildNestedSets(LibraryNodes, libraryNode.root.id);
 
-    return libraryNodeId;
+    return libraryNode._id;
   },
 });
 
