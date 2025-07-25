@@ -8,7 +8,7 @@ export default async function applyFolderProperty(
 ): Promise<void> {
   const prop = task.prop;
 
-  if (prop.type !== 'folder') {
+  if (prop.type !== 'folder' && prop.type !== 'propertySlot') {
     throw new Meteor.Error('wrong-property', `Expected a folder, got ${prop.type} instead`);
   }
 
