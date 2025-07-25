@@ -229,6 +229,7 @@ export default {
         creatureId: this.model.root.id,
         $store: this.$store,
         elementId: `${this.model._id}-do-action-button`,
+        targetIds: [],
       }).catch((e) => {
         console.error(e);
       }).finally(() => {

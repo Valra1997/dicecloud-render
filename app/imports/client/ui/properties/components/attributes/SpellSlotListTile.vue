@@ -121,7 +121,6 @@ export default {
         elementId: `spell-slot-list-tile-${model._id}`,
         task: {
         subtaskFn: 'damageProp',
-        prop: model,
         targetIds: [model.root.id],
         params: {
           title: getPropertyTitle(model),

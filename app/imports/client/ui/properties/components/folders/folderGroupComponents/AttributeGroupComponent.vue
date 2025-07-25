@@ -101,7 +101,6 @@ export default {
         elementId: this.dataId,
         task: {
           subtaskFn: 'damageProp',
-          prop: model,
           targetIds: [model.root.id],
           params: {
             title: getPropertyTitle(model),

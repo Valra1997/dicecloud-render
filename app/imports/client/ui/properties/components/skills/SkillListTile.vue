@@ -110,7 +110,6 @@ export default {
         elementId: `check-btn-${this.model._id}`, 
         task: {
           subtaskFn: 'check',
-          prop: this.model,
           targetIds: [this.model.root.id],
           advantage: this.model.advantage,
           skillVariableName: this.model.variableName,

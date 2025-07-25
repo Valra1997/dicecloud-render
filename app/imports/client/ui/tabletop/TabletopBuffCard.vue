@@ -168,6 +168,7 @@ export default {
         creatureId: this.model.root.id,
         $store: this.$store,
         elementId: 'do-action-button',
+        targetIds: [],
       }).catch((e) => {
         console.error(e);
         snackbar({ text: e.message || e.reason || e.toString() });

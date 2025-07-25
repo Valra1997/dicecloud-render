@@ -50,6 +50,7 @@ export default {
         creatureId: this.model.root.id,
         $store: this.$store,
         elementId: `event-btn-${this.model._id}`,
+        targetIds: [],
       }).catch(error => {
         snackbar({ text: error.reason || error.message || error.toString() });
         console.error(error);

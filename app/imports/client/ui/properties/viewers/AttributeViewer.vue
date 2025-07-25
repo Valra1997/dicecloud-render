@@ -40,6 +40,7 @@
           icon
           tile
           color="primary"
+          :data-id="`${model._id}-increment`"
           :value="model.value"
           :loading="damagePropertyLoading"
           @change="damageProperty"
@@ -212,16 +213,20 @@ import getPropertyTitle from '/imports/client/ui/properties/shared/getPropertyTi
       damageProperty({ type, value }) {
         const model = this.model;
         this.damagePropertyLoading = true;
-        doAction(model, this.$store, model._id, {
-          subtaskFn: 'damageProp',
-          prop: model,
-          targetIds: [model.root.id],
-          params: {
-            title: getPropertyTitle(model),
-            operation: type,
-            value,
-            targetProp: model,
-          }
+        doAction({
+          creatureId: model.root.id,
+          $store: this.$store,
+          elementId: `${model._id}-increment`,
+          task: {
+            subtaskFn: 'damageProp',
+            targetIds: [model.root.id],
+            params: {
+              title: getPropertyTitle(model),
+              operation: type,
+              value,
+              targetProp: model,
+            },
+          },
         }).catch((error) => {
           snackbar({ text: error.reason || error.message || error.toString() });
           console.error(error);

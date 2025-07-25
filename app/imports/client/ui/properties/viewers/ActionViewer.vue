@@ -203,6 +203,7 @@ export default {
         $store: this.$store,
         propId: this.model._id,
         elementId: 'do-action-button',
+        targetIds: [],
       }).catch((e) => {
         console.error(e);
         snackbar({ text: e.message || e.reason || e.toString() });

@@ -611,11 +611,12 @@ export default {
     },
     incrementChange(_id, { type, value, ack }) {
       const model = CreatureProperties.findOne(_id);
+      if (!model) return;
       if (type === 'increment') value = -value;
       doAction({
         creatureId: model.root.id,
         $store: this.$store,
-        elementId: `${model._id}-${type}`,
+        elementId: `${model._id}`,
         task: {
           subtaskFn: 'damageProp',
           targetIds: [model.root.id],

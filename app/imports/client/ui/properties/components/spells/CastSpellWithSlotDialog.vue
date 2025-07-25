@@ -360,12 +360,17 @@ export default {
       const withoutSpellSlot = slotId === 'no-slot';
       if (ritual || withoutSpellSlot) slotId = undefined;
       const $store = this.$store;
+      const spell = CreatureProperties.findOne(spellId);
+      if (!spell || spell.type !== 'spell') {
+        return;
+      }
       doAction({
         creatureId: this.creatureId,
         $store,
         task: {
           subtaskFn: 'castSpell',
-          prop: CreatureProperties.findOne(spellId),
+          prop: spell,
+          targetIds: [],
           params: {
             slotId,
             ritual,
