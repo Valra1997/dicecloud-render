@@ -65,7 +65,7 @@ function pushDependenciesToStack(nodeId: NodeId, graph: Graph, stack: TraversedN
       // This is a dependency loop, find a path from the node to itself
       // and store that path as a dependency loop error
       const pather = path.nba(graph, { oriented: true });
-      const loop: TraversedNode[] = [];
+      let loop: TraversedNode[] = [];
       // Pather doesn't like going from a node to itself, so find all the
       // paths going from the next node back to the original node
       // and return the shortest one
