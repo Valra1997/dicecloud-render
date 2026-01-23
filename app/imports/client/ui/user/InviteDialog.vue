@@ -76,7 +76,7 @@ export default {
   computed: {
     inviteLink() {
       let token = this.inviteToken;
-      return token && `https://beta.dicecloud.com/invite/${token}`;
+      return token && `https://dicecloud.com/invite/${token}`;
     },
   },
   methods: {
