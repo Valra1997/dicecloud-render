@@ -3,11 +3,9 @@ FROM ubuntu:jammy
 USER root
 RUN adduser --system mt
 
-RUN apt-get update
-RUN apt-get install --quiet --yes curl
-RUN curl -fsSL https://deb.nodesource.com/setup_14.x | bash -
-RUN apt-get update
-RUN apt-get install --quiet --yes nodejs git
+RUN apt-get update && apt-get install -y curl gnupg
+RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash -
+RUN apt-get install -y nodejs git
 
 USER mt
 
